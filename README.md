@@ -2,6 +2,9 @@
 Simple **command line**  application that authorizes a transaction 
 for a specific account following a set of predefined rules.
 
+The program expects `json` lines as inputs in the `stdin`, 
+and provides a `json` line output for each one.
+
 ## Commands
 
 ### `make setup`

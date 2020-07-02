@@ -24,6 +24,7 @@ install:
 build:
 	go build -v -o $(MODULE_NAME).bin ./$(MODULE_NAME)
 	chmod +x $(MODULE_NAME).bin
+	echo $(MODULE_NAME).bin
 
 .PHONY: test
 test:

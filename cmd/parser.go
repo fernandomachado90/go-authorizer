@@ -21,6 +21,9 @@ func Parse(reader io.Reader) *bytes.Buffer {
 		errs = Initialize(*input.Account)
 	} else if input.Transaction != nil {
 		errs = CurrentAccount.Authorize(*input.Transaction)
+	} else {
+		// undefined operation
+		return &bytes.Buffer{}
 	}
 
 	var output Payload = Payload{

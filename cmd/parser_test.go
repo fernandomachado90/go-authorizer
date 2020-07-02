@@ -136,6 +136,17 @@ func TestParse(t *testing.T) {
 			expected := fmt.Sprintf(`{"account":{"activeCard":true,"availableLimit":100},"violations":["%s"]}`, DoubledTransaction)
 			assert.JSONEq(t, expected, stdout.String())
 		},
+		"Should output empty payload after parsing unknown commands": func(t *testing.T) {
+			// given
+			var stdin bytes.Buffer
+			stdin.Write([]byte(`{ "unknown": { "command": "here" } }`))
+
+			// when
+			stdout := Parse(&stdin)
+
+			// then
+			assert.Empty(t, stdout)
+		},
 	}
 
 	for name, run := range tests {
