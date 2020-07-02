@@ -25,7 +25,7 @@ Starts the server application on a `Docker` image on port `8080`.
 ## Operations
 The program handles two kinds of operations, deciding on which one according to the line that is being processed.
 
-#### `Account creation`
+### Account creation
 Creates the account with `availableLimit` and `activeCard` set.
 
 ###### input 
@@ -35,7 +35,7 @@ Creates the account with `availableLimit` and `activeCard` set.
 ###### expected violations
     ["account-already-initialized"]
 
-#### `Transaction authorization`
+### Transaction authorization
 Tries to authorize a transaction for a particular `merchant`, `amount` and `time` given the account's state 
 and last authorized transactions.
 

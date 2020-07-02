@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 )
 
+var CurrentAccount *Account
+
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+	for {
+		fmt.Println(Parse(os.Stdin))
 	}
 }

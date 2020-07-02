@@ -8,14 +8,36 @@ import (
 
 func TestCreateAccount(t *testing.T) {
 	tests := map[string]func(*testing.T){
-		"Should initialize entity": func(t *testing.T) {
-			//given
+		"Should create account when there are no accounts": func(t *testing.T) {
+			// given
+			CurrentAccount = nil
 
 			// when
-			account := Account{}
+			err := Create(Account{
+				ActiveCard:     true,
+				AvailableLimit: 123,
+			})
 
 			// then
-			assert.Empty(t, account)
+			assert.NotEmpty(t, CurrentAccount)
+			assert.NoError(t, err)
+		},
+		"Should not create account when an account is already created": func(t *testing.T) {
+			// given
+			CurrentAccount = &Account{
+				ActiveCard:     true,
+				AvailableLimit: 123,
+			}
+
+			// when
+			err := Create(Account{
+				ActiveCard:     false,
+				AvailableLimit: 456,
+			})
+
+			// then
+			assert.NotEmpty(t, CurrentAccount)
+			assert.Error(t, err, AccountAlreadyInitialized)
 		},
 	}
 
