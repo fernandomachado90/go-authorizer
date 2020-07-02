@@ -18,7 +18,7 @@ func Parse(reader io.Reader) *bytes.Buffer {
 	_ = json.NewDecoder(reader).Decode(&payload)
 
 	if payload.Account != (Account{}) {
-		err = Create(payload.Account)
+		err = Initialize(payload.Account)
 		payload.Account = *CurrentAccount
 	}
 

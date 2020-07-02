@@ -5,8 +5,6 @@ import (
 	"os"
 )
 
-var CurrentAccount *Account
-
 func main() {
 	for {
 		fmt.Println(Parse(os.Stdin))

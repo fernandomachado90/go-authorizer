@@ -7,7 +7,9 @@ type Account struct {
 	AvailableLimit int  `json:"availableLimit"`
 }
 
-func Create(acc Account) error {
+var CurrentAccount *Account
+
+func Initialize(acc Account) error {
 	if CurrentAccount != nil {
 		return errors.New(AccountAlreadyInitialized)
 	}
