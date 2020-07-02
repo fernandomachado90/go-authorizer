@@ -7,10 +7,10 @@ type Account struct {
 	AvailableLimit int  `json:"availableLimit"`
 }
 
-func Create(a Account) error {
+func Create(acc Account) error {
 	if CurrentAccount != nil {
 		return errors.New(AccountAlreadyInitialized)
 	}
-	CurrentAccount = &a
+	CurrentAccount = &acc
 	return nil
 }
