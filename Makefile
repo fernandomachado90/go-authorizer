@@ -36,7 +36,7 @@ run:
 .PHONY: docker
 docker:
 	docker build --build-arg root_dir=./$(MODULE_NAME) -t $(PROJECT_NAME) .
-	docker run --publish 8080:8080 --name $(PROJECT_NAME) --rm $(PROJECT_NAME)
+	docker run -a stdin -a stdout -i -t --name $(PROJECT_NAME) --rm $(PROJECT_NAME)
 
 .PHONY: format
 format:
