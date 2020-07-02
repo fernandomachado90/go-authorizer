@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 )
 
 var CurrentAccount *Account
@@ -22,9 +21,9 @@ const BufferIntervalMinutes = 2
 const MaxFrequencyPerInterval = 3
 const MaxSimilarityPerInterval = 1
 
-func Initialize(acc Account) error {
+func Initialize(acc Account) []error {
 	if CurrentAccount != nil {
-		return errors.New(AccountAlreadyInitialized)
+		return []error{errors.New(AccountAlreadyInitialized)}
 	}
 	CurrentAccount = &acc
 	return nil
@@ -66,9 +65,6 @@ func (acc *Account) countBufferMatches(newTransaction Transaction) bufferMatches
 	matches := bufferMatches{}
 	for _, t := range acc.transactions {
 		timeSinceLastTransaction := newTransaction.Time.Sub(t.Time)
-		fmt.Println(newTransaction.Time)
-		fmt.Println(t.Time)
-		fmt.Println(timeSinceLastTransaction.Minutes())
 		if timeSinceLastTransaction.Minutes() > BufferIntervalMinutes {
 			continue
 		}

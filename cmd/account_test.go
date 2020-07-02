@@ -15,14 +15,14 @@ func TestInitializeAccount(t *testing.T) {
 			CurrentAccount = nil
 
 			// when
-			err := Initialize(Account{
+			errs := Initialize(Account{
 				ActiveCard:     true,
 				AvailableLimit: 123,
 			})
 
 			// then
 			assert.NotEmpty(t, CurrentAccount)
-			assert.NoError(t, err)
+			assert.Empty(t, errs)
 		},
 		"Should not initialize account when an account is already initialized": func(t *testing.T) {
 			// given
@@ -32,14 +32,15 @@ func TestInitializeAccount(t *testing.T) {
 			}
 
 			// when
-			err := Initialize(Account{
+			errs := Initialize(Account{
 				ActiveCard:     false,
 				AvailableLimit: 456,
 			})
 
 			// then
 			assert.NotEmpty(t, CurrentAccount)
-			assert.Error(t, err, AccountAlreadyInitialized)
+			assert.Len(t, errs, 1)
+			assert.Contains(t, errs, errors.New(AccountAlreadyInitialized))
 		},
 	}
 
@@ -86,6 +87,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(InsufficientLimit))
 		},
 		"Should not authorize transaction due to card not active violation": func(t *testing.T) {
@@ -104,12 +106,13 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(CardNotActive))
 		},
-		"Should not authorize transaction due to high frequency violation": func(t *testing.T) {
+		"Should not authorize transaction due to high frequency on a small interval violation": func(t *testing.T) {
 			// given
 			account := &Account{
-				ActiveCard:     false,
+				ActiveCard:     true,
 				AvailableLimit: 100,
 				transactions: []Transaction{
 					{Time: time.Date(2020, 7, 12, 10, 30, 0, 0, time.UTC)},
@@ -127,12 +130,13 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(HighFrequencySmallInterval))
 		},
-		"Should not authorize transaction due to double transaction violation": func(t *testing.T) {
+		"Should not authorize transaction due to doubled transaction violation": func(t *testing.T) {
 			// given
 			account := &Account{
-				ActiveCard:     false,
+				ActiveCard:     true,
 				AvailableLimit: 100,
 				transactions: []Transaction{
 					{
@@ -152,6 +156,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(DoubledTransaction))
 		},
 	}
@@ -211,7 +216,7 @@ func TestCommitTransaction(t *testing.T) {
 
 func TestCountBufferMatches(t *testing.T) {
 	tests := map[string]func(*testing.T){
-		"Should count buffer matches": func(t *testing.T) {
+		"Should count buffer matches according to the defined buffer interval": func(t *testing.T) {
 			// given
 			account := &Account{
 				transactions: []Transaction{

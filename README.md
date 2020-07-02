@@ -40,7 +40,7 @@ Tries to authorize a transaction for a particular `merchant`, `amount` and `time
 and last authorized transactions.
 
 ###### input 
-    { "transaction": { "merchant": "Burger King", "amount": 20, "time": "2019-02-13T10:00:00.000Z" } }
+    { "transaction": { "merchant": "Acme Corporatiob", "amount": 20, "time": "2020-07-12T10:00:00.000Z" } }
 ###### output 
     { "account": { "activeCard": true, "availableLimit": 80 }, "violations": [] }
 ###### expected violations

@@ -7,29 +7,33 @@ import (
 )
 
 type Payload struct {
-	Account    *Account `json:"account"`
-	Violations []string `json:"violations"`
+	Account     *Account     `json:"account"`
+	Transaction *Transaction `json:"transaction,omitempty"`
+	Violations  []string     `json:"violations"`
 }
 
 func Parse(reader io.Reader) *bytes.Buffer {
-	var err error
+	var input Payload
+	_ = json.NewDecoder(reader).Decode(&input)
 
-	var payload Payload
-	_ = json.NewDecoder(reader).Decode(&payload)
-
-	if payload.Account != nil {
-		err = Initialize(*payload.Account)
-		payload.Account = CurrentAccount // todo revise this attribuition
+	var errs []error
+	if input.Account != nil {
+		errs = Initialize(*input.Account)
+	} else if input.Transaction != nil {
+		errs = CurrentAccount.Authorize(*input.Transaction)
 	}
 
-	payload.Violations = []string{}
-	if err != nil {
-		payload.Violations = append(payload.Violations, err.Error())
+	var output Payload = Payload{
+		Account:    CurrentAccount,
+		Violations: []string{},
+	}
+	for _, err := range errs {
+		output.Violations = append(output.Violations, err.Error())
 	}
 
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
-	_ = encoder.Encode(payload)
+	_ = encoder.Encode(output)
 
 	return buffer
 }
