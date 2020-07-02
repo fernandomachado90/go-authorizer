@@ -1,68 +1,60 @@
 package main
 
 import (
-	"errors"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAuthorizeTransaction(t *testing.T) {
+func TestIsSimilarTransaction(t *testing.T) {
 	tests := map[string]func(*testing.T){
-		"Should authorize transaction with no violations": func(t *testing.T) {
+		"Should detect a similar transaction": func(t *testing.T) {
 			// given
-			account := &Account{
-				ActiveCard:     true,
-				AvailableLimit: 100,
+			tr := &Transaction{
+				Merchant: "Hello World",
+				Amount:   100,
 			}
 
 			// when
-			errs := account.Authorize(Transaction{
-				Merchant: "Acme Corporation",
-				Amount:   20,
-				Time:     time.Now(),
+			similar := tr.isSimilar(Transaction{
+				Merchant: "Hello World",
+				Amount:   100,
 			})
 
 			// then
-			assert.Equal(t, 80, account.AvailableLimit)
-			assert.Empty(t, errs)
+			assert.True(t, similar)
 		},
-		"Should not authorize transaction due to insufficient limit violation": func(t *testing.T) {
+		"Should not detect a similar transaction due to different merchant": func(t *testing.T) {
 			// given
-			account := &Account{
-				ActiveCard:     true,
-				AvailableLimit: 100,
+			tr := &Transaction{
+				Merchant: "Hello",
+				Amount:   100,
 			}
 
 			// when
-			errs := account.Authorize(Transaction{
-				Merchant: "Acme Corporation",
-				Amount:   200,
-				Time:     time.Now(),
+			similar := tr.isSimilar(Transaction{
+				Merchant: "Hello World",
+				Amount:   100,
 			})
 
 			// then
-			assert.Equal(t, 100, account.AvailableLimit)
-			assert.Contains(t, errs, errors.New(InsufficientLimit))
+			assert.False(t, similar)
 		},
-		"Should not authorize transaction due to card not active violation": func(t *testing.T) {
+		"Should not detect a similar transaction due to different amount": func(t *testing.T) {
 			// given
-			account := &Account{
-				ActiveCard:     false,
-				AvailableLimit: 100,
+			tr := &Transaction{
+				Merchant: "Hello World",
+				Amount:   100,
 			}
 
 			// when
-			errs := account.Authorize(Transaction{
-				Merchant: "Acme Corporation",
-				Amount:   10,
-				Time:     time.Now(),
+			similar := tr.isSimilar(Transaction{
+				Merchant: "Hello World",
+				Amount:   50,
 			})
 
 			// then
-			assert.Equal(t, 100, account.AvailableLimit)
-			assert.Contains(t, errs, errors.New(CardNotActive))
+			assert.False(t, similar)
 		},
 	}
 

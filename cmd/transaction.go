@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"time"
 )
 
@@ -11,18 +10,6 @@ type Transaction struct {
 	Time     time.Time `json:"time"`
 }
 
-func (acc *Account) Authorize(tr Transaction) []error {
-	var errs []error
-
-	if acc.AvailableLimit-tr.Amount < 0 {
-		errs = append(errs, errors.New(InsufficientLimit))
-	}
-	if !acc.ActiveCard {
-		errs = append(errs, errors.New(CardNotActive))
-	}
-
-	if errs == nil {
-		acc.AvailableLimit -= tr.Amount
-	}
-	return errs
+func (tr *Transaction) isSimilar(other Transaction) bool {
+	return tr.Amount == other.Amount && tr.Merchant == other.Merchant
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type Payload struct {
-	Account    Account  `json:"account"`
+	Account    *Account `json:"account"`
 	Violations []string `json:"violations"`
 }
 
@@ -17,9 +17,9 @@ func Parse(reader io.Reader) *bytes.Buffer {
 	var payload Payload
 	_ = json.NewDecoder(reader).Decode(&payload)
 
-	if payload.Account != (Account{}) {
-		err = Initialize(payload.Account)
-		payload.Account = *CurrentAccount
+	if payload.Account != nil {
+		err = Initialize(*payload.Account)
+		payload.Account = CurrentAccount // todo revise this attribuition
 	}
 
 	payload.Violations = []string{}
