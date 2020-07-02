@@ -17,10 +17,10 @@ Build source files into an executable binary called `cmd.bin`.
 Execute all available tests.
 
 ### `make run`
-Runs the application and waits
+Runs the application and reads input from `stdin`.
 
 ### `make docker`
-Starts the server application on a `Docker` image on port `8080`.
+Runs the application on a `Docker` image and reads input from `stdin`.
 
 ## Operations
 The program handles two kinds of operations, deciding on which one according to the line that is being processed.
