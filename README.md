@@ -75,7 +75,7 @@ which would go against the **anonymity** requirement of this challenge.
 On the architecture design side, I made a clear split between  **pure** and **impure** logic, 
 making it easy to refactor the code into dedicated **core domain** and **interface adapter** packages in the future.
 
-The code was developed using `TDD` with **unit tests** being created to validate both "happy paths" and expected violations.
+The code was developed using **TDD** with **unit tests** being created to validate both "happy paths" and expected violations.
 In order to assert that the application state is updated correctly, a single **integration test** was also created
 to simulate the usual flow of the program with multiple `json` payloads being processed one by one.
 
