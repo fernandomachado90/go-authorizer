@@ -59,8 +59,8 @@ been writing `Go` recently and wanted to experiment more with it and keep the fl
 The code had to be organized on a **single package**  due to `Go` limitations. In order to refer to code from other packages,
 I would need to import them from a repository, which would go against the **anonymity** requirement of this challenge.
 
-Having said that, I was able to make a clear split between  **pure** and **impure** logic, making it easy to refactor 
-the code into dedicated **core domain** and **interface adapter** packages in the future.
+Even on this flat architecture, I was able to make a clear split between  **pure** and **impure** logic, 
+making it easy to refactor the code into dedicated **core domain** and **interface adapter** packages in the future.
 
 ### Solution
 
