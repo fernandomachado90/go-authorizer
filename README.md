@@ -5,6 +5,10 @@ for a specific account following a set of predefined rules.
 The program expects `json` lines as inputs in the `stdin`, 
 and provides a `json` line output for each one.
 
+## Requisites
+
+- [GoLang](https://golang.org/doc/install) 1.14 (or [Docker](https://www.docker.com/get-started))
+
 ## Commands
 
 ### `make setup`
