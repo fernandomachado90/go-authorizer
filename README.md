@@ -91,5 +91,5 @@ that happened during the last **2 minutes** (interval customizable on the `Inter
 
 #### Output encoding
 
-After either operation is done, a payload containing the current status of the `Account` is encoded along with any
-**violations** that might have happened and forwarded to the `stdout`.
+After either operation is done, a payload containing the `CurrentAccount` state is encoded along with any
+`violations` that might have happened during execution and then forwarded to `stdout`.
