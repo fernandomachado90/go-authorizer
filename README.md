@@ -87,7 +87,7 @@ through a last authorized `transactions` array to count matches in order to dete
 `high-frequency-small-interval` and `doubled-transaction` violations.
 
 In the future, the last authorized `transactions` array could be improved to keep track of only the events 
-that happened during the last **2 minutes** (timespan customizable on the `IntervalMinutes` constant).
+that happened during the last **2 minutes** (interval customizable on the `IntervalMinutes` constant).
 
 #### Output encoding
 
