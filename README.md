@@ -53,13 +53,14 @@ and last authorized transactions.
 
 ### Architecture
 
-I decided to use `Go` due to simplicity reasons since the problem statement didn't require anything too elaborate. I've 
-been writing `Go` recently and wanted to experiment more with it and keep the flow going.
+I decided to use `Go` due to **simplicity** reasons since the problem statement didn't require anything too elaborate. I've 
+been writing some `Go` code recently and wanted to keep that flow going.
 
-The code had to be organized on a **single package**  due to `Go` limitations. In order to refer to code from other packages,
-I would need to import them from a repository, which would go against the **anonymity** requirement of this challenge.
+The code had to be organized on a **single package**  because of `Go` limitations. 
+In order to refer to code from other packages, I would need to import them from my own public repository, 
+which would go against the **anonymity** requirement of this challenge.
 
-Even on this flat architecture, I was able to make a clear split between  **pure** and **impure** logic, 
+On the architecture design side, I made a clear split between  **pure** and **impure** logic, 
 making it easy to refactor the code into dedicated **core domain** and **interface adapter** packages in the future.
 
 ### Solution
