@@ -7,7 +7,7 @@ and provides a `json` line output for each one.
 
 ## Requisites
 
-- [GoLang](https://golang.org/doc/install) 1.14 (or [Docker](https://www.docker.com/get-started))
+- [GoLang](https://golang.org/doc/install) ^1.14 (or [Docker](https://www.docker.com/get-started))
 
 ## Commands
 
