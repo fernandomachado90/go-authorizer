@@ -5,7 +5,11 @@ and provides a `json` line output for each one.
 
 ## Requisites
 
-- [GoLang](https://golang.org/doc/install) 1.14 (or [Docker](https://www.docker.com/get-started))
+- [Docker](https://www.docker.com/get-started)
+- [GoLang](https://golang.org/doc/install) 1.14
+
+You don't need to install `GoLang` to run the application or its tests. 
+A `Docker` interface is provided on the **Commands** section below.
 
 ## Commands
 
@@ -19,12 +23,18 @@ Format all files using `go fmt`.
 Build source files into an executable binary called `cmd.bin`.
 
 ### `make test`                    
-Execute all available tests.
+Runs available tests.
 
 ### `make run`
 Runs the application and reads input from `stdin`.
 
-### `make docker`
+### `make docker-build`
+Build a `Docker` image with the required dependencies.
+
+### `make docker-test`
+Runs available tests on a `Docker` image.
+
+### `make docker-run`
 Runs the application on a `Docker` image and reads input from `stdin`.
 
 ## Operations

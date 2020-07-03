@@ -10,15 +10,21 @@ help:
 	$(info -> setup                   install dependencies)
 	$(info -> format                  formats go files)
 	$(info -> build                   build binary)
-	$(info -> test                    executes tests)
+	$(info -> test                    runs available tests)
 	$(info -> run                     runs application)
-	$(info -> docker                  runs application on a docker image)
+	$(info -> docker-build            builds application on a docker image)
+	$(info -> docker-test             runs available tests on a docker image)
+	$(info -> docker-run              runs application on a docker image)
 
 .PHONY: setup
 install:
 	go get -d -v ./...
 	go install -v ./...
 	go mod tidy -v
+
+.PHONY: format
+format:
+	go fmt ./...
 
 .PHONY: build
 build:
@@ -34,11 +40,14 @@ test:
 run:
 	go run ./$(MODULE_NAME)
 
-.PHONY: docker
-docker:
+.PHONY: docker-build
+docker-build:
 	docker build --build-arg root_dir=./$(MODULE_NAME) -t $(PROJECT_NAME) .
+
+.PHONY: docker-run
+docker-run: docker-build
 	docker run -a stdin -a stdout -i -t --name $(PROJECT_NAME) --rm $(PROJECT_NAME)
 
-.PHONY: format
-format:
-	go fmt ./...
+.PHONY: docker-test
+docker-test: docker-build
+	docker run --name $(PROJECT_NAME) --rm $(PROJECT_NAME) go test ./... -v -covermode=count
