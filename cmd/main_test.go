@@ -25,11 +25,11 @@ func TestIntegration(t *testing.T) {
 			`{ "account": { "activeCard": true, "availableLimit": 180 }, "violations": [] }`,
 		},
 		{
-			`{ "transaction": { "merchant": "Beta", "amount": 40, "time": "2020-07-12T10:30:00.000Z" } }`,
+			`{ "transaction": { "merchant": "Alpha", "amount": 40, "time": "2020-07-12T10:30:00.000Z" } }`,
 			`{ "account": { "activeCard": true, "availableLimit": 140 }, "violations": [] }`,
 		},
 		{
-			`{ "transaction": { "merchant": "Gamma", "amount": 40, "time": "2020-07-12T10:31:00.000Z" } }`,
+			`{ "transaction": { "merchant": "Beta", "amount": 40, "time": "2020-07-12T10:31:00.000Z" } }`,
 			`{ "account": { "activeCard": true, "availableLimit": 100 }, "violations": [] }`,
 		},
 		{
