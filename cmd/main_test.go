@@ -21,6 +21,10 @@ func TestIntegration(t *testing.T) {
 			`{ "account": { "activeCard": true, "availableLimit": 200 }, "violations": [] }`,
 		},
 		{
+			`{ "account": { "activeCard": false, "availableLimit": 100 } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 200 }, "violations": ["account-already-initialized"] }`,
+		},
+		{
 			`{ "transaction": { "merchant": "Alpha", "amount": 20, "time": "2020-07-12T10:29:59.000Z" } }`,
 			`{ "account": { "activeCard": true, "availableLimit": 180 }, "violations": [] }`,
 		},
