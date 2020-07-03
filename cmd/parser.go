@@ -22,8 +22,7 @@ func Parse(reader io.Reader) *bytes.Buffer {
 	} else if input.Transaction != nil {
 		errs = CurrentAccount.Authorize(*input.Transaction)
 	} else {
-		// undefined operation
-		return &bytes.Buffer{}
+		return &bytes.Buffer{} // undefined operation
 	}
 
 	var output Payload = Payload{
@@ -37,6 +36,5 @@ func Parse(reader io.Reader) *bytes.Buffer {
 	buffer := &bytes.Buffer{}
 	encoder := json.NewEncoder(buffer)
 	_ = encoder.Encode(output)
-
 	return buffer
 }

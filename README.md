@@ -48,3 +48,46 @@ and last authorized transactions.
     { "account": { "activeCard": true, "availableLimit": 80 }, "violations": [] }
 ###### expected violations
     ["insufficient-limit", "card-not-active", "high-frequency-small-interval", "doubled-transaction"]
+
+## Design choices
+
+### Architecture
+
+I decided to use `Go` due to simplicity reasons since the problem statement didn't require anything too elaborate. I've 
+been writing `Go` recently and wanted to experiment more with it and keep the flow going.
+
+The code had to be organized on a **single package**  due to `Go` limitations. In order to refer to code from other packages,
+I would need to import them from a repository, which would go against the **anonymity** requirement of this challenge.
+
+Having said that, I was able to make a clear split between  **pure** and **impure** logic, making it easy to refactor 
+the code into dedicated **core domain** and **interface adapter** packages in the future.
+
+### Solution
+
+#### Input decoding
+
+After the program starts, every line received on `stdin` is tentatively parsed to a known structure so we can understand
+if the input is related to an  **Account creation** or a **Transaction authorization** operation. 
+
+In case the program is unable to identify the input, 
+an empty body is printed on `stdout` as a form of feedback but the execution does not stop.
+
+#### Account creation
+
+Initializes the `CurrentAccount` global variable with the `account` informed or returns the `account-already-initialized` 
+violation if an account is already set.
+
+#### Transaction authorization
+
+Tries to authorize a `transaction`. Updates the `CurrentAccount` state in case of success. The validations 
+performed check either simple properties from the account state (for `insufficient-limit` and `card-not-active` violations) 
+or counts matches iterating through a last authorized `transactions` array 
+(for `high-frequency-small-interval` and `doubled-transaction` violations).
+
+In the future, this `transactions` could be improved to keep track of only the events 
+that happened during the last **2 minutes** (customizable on the `IntervalMinutes` configuration setting).
+
+#### Output encoding
+
+After either operation is done, a payload containing the current status of the `Account` is encoded along with any
+**violations** that might have happened and forwarded to the `stdout`.

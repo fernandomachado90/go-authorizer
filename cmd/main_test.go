@@ -17,16 +17,28 @@ func TestIntegration(t *testing.T) {
 	}
 	tests := []contract{
 		{
-			`{ "account": { "activeCard": true, "availableLimit": 100 } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 200 } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 200 }, "violations": [] }`,
+		},
+		{
+			`{ "transaction": { "merchant": "Alpha", "amount": 20, "time": "2020-07-12T10:29:59.000Z" } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 180 }, "violations": [] }`,
+		},
+		{
+			`{ "transaction": { "merchant": "Beta", "amount": 40, "time": "2020-07-12T10:30:00.000Z" } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 140 }, "violations": [] }`,
+		},
+		{
+			`{ "transaction": { "merchant": "Gamma", "amount": 40, "time": "2020-07-12T10:31:00.000Z" } }`,
 			`{ "account": { "activeCard": true, "availableLimit": 100 }, "violations": [] }`,
 		},
 		{
-			`{ "transaction": { "merchant": "Alpha", "amount": 20, "time": "2020-07-12T10:00:00.000Z" } }`,
-			`{ "account": { "activeCard": true, "availableLimit": 80 }, "violations": [] }`,
+			`{ "transaction": { "merchant": "Omega", "amount": 100, "time": "2020-07-12T10:32:00.000Z" } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 0 }, "violations": [] }`,
 		},
 		{
-			`{ "transaction": { "merchant": "Beta", "amount": 90, "time": "2020-07-12T11:00:00.000Z" } }`,
-			`{ "account": { "activeCard": true, "availableLimit": 80 }, "violations": [ "insufficient-limit" ] }`,
+			`{ "transaction": { "merchant": "Omega", "amount": 100, "time": "2020-07-12T10:32:00.000Z" } }`,
+			`{ "account": { "activeCard": true, "availableLimit": 0 }, "violations": ["insufficient-limit", "high-frequency-small-interval", "doubled-transaction"] }`,
 		},
 	}
 

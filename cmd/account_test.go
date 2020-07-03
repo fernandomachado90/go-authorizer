@@ -69,6 +69,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 			// then
 			assert.Equal(t, 80, account.AvailableLimit)
+			assert.Len(t, account.transactions, 1)
 			assert.Empty(t, errs)
 		},
 		"Should not authorize transaction due to insufficient limit violation": func(t *testing.T) {
@@ -87,6 +88,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, account.transactions, 0)
 			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(InsufficientLimit))
 		},
@@ -100,16 +102,17 @@ func TestAuthorizeTransaction(t *testing.T) {
 			// when
 			errs := account.Authorize(Transaction{
 				Merchant: "Acme Corporation",
-				Amount:   10,
+				Amount:   20,
 				Time:     time.Now(),
 			})
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, account.transactions, 0)
 			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(CardNotActive))
 		},
-		"Should not authorize transaction due to high frequency on a small interval violation": func(t *testing.T) {
+		"Should not authorize transaction due to high frequency on small interval violation": func(t *testing.T) {
 			// given
 			account := &Account{
 				ActiveCard:     true,
@@ -124,12 +127,13 @@ func TestAuthorizeTransaction(t *testing.T) {
 			// when
 			errs := account.Authorize(Transaction{
 				Merchant: "Acme Corporation",
-				Amount:   10,
+				Amount:   20,
 				Time:     time.Date(2020, 7, 12, 10, 32, 0, 0, time.UTC),
 			})
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, account.transactions, 3)
 			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(HighFrequencySmallInterval))
 		},
@@ -141,7 +145,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 				transactions: []Transaction{
 					{
 						Merchant: "Acme Corporation",
-						Amount:   10,
+						Amount:   20,
 						Time:     time.Date(2020, 7, 12, 10, 30, 0, 0, time.UTC),
 					},
 				},
@@ -150,12 +154,13 @@ func TestAuthorizeTransaction(t *testing.T) {
 			// when
 			errs := account.Authorize(Transaction{
 				Merchant: "Acme Corporation",
-				Amount:   10,
-				Time:     time.Date(2020, 7, 12, 10, 30, 0, 0, time.UTC),
+				Amount:   20,
+				Time:     time.Date(2020, 7, 12, 10, 31, 0, 0, time.UTC),
 			})
 
 			// then
 			assert.Equal(t, 100, account.AvailableLimit)
+			assert.Len(t, account.transactions, 1)
 			assert.Len(t, errs, 1)
 			assert.Contains(t, errs, errors.New(DoubledTransaction))
 		},
@@ -168,67 +173,16 @@ func TestAuthorizeTransaction(t *testing.T) {
 	}
 }
 
-func TestCommitTransaction(t *testing.T) {
+func TestCountMatches(t *testing.T) {
 	tests := map[string]func(*testing.T){
-		"Should commit transaction successfully": func(t *testing.T) {
-			// given
-			account := &Account{
-				AvailableLimit: 100,
-			}
-
-			// when
-			account.commit(Transaction{
-				Amount: 20,
-			}, false)
-
-			// then
-			assert.Equal(t, 80, account.AvailableLimit)
-			assert.Len(t, account.transactions, 1)
-		},
-		"Should commit transaction successfully and clear buffer": func(t *testing.T) {
-			// given
-			account := &Account{
-				AvailableLimit: 100,
-				transactions: []Transaction{
-					{Amount: 10},
-					{Amount: 20},
-					{Amount: 30},
-				},
-			}
-
-			// when
-			account.commit(Transaction{
-				Amount: 20,
-			}, true)
-
-			// then
-			assert.Equal(t, 80, account.AvailableLimit)
-			assert.Len(t, account.transactions, 1)
-		},
-	}
-
-	for name, run := range tests {
-		t.Run(name, func(t *testing.T) {
-			run(t)
-		})
-	}
-}
-
-func TestCountBufferMatches(t *testing.T) {
-	tests := map[string]func(*testing.T){
-		"Should count buffer matches according to the defined buffer interval": func(t *testing.T) {
+		"Should count matches according to the defined interval": func(t *testing.T) {
 			// given
 			account := &Account{
 				transactions: []Transaction{
-					{
-						Merchant: "Zetta",
-						Amount:   1000,
-						Time:     time.Date(2020, 7, 12, 10, 29, 59, 0, time.UTC),
-					},
 					{
 						Merchant: "Alpha",
 						Amount:   10,
-						Time:     time.Date(2020, 7, 12, 10, 30, 00, 0, time.UTC),
+						Time:     time.Date(2020, 7, 12, 10, 30, 0, 0, time.UTC),
 					},
 					{
 						Merchant: "Beta",
@@ -244,7 +198,7 @@ func TestCountBufferMatches(t *testing.T) {
 			}
 
 			// when
-			matches := account.countBufferMatches(Transaction{
+			matches := account.countMatches(Transaction{
 				Merchant: "Gamma",
 				Amount:   30,
 				Time:     time.Date(2020, 7, 12, 10, 32, 1, 0, time.UTC),
@@ -252,7 +206,7 @@ func TestCountBufferMatches(t *testing.T) {
 
 			// then
 			assert.Equal(t, 2, matches.frequency)
-			assert.Equal(t, 1, matches.similar)
+			assert.Equal(t, 1, matches.similarity)
 		},
 	}
 

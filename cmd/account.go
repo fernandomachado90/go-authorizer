@@ -4,22 +4,27 @@ import (
 	"errors"
 )
 
-var CurrentAccount *Account
-
 type Account struct {
 	ActiveCard     bool `json:"activeCard"`
 	AvailableLimit int  `json:"availableLimit"`
 	transactions   []Transaction
 }
 
-type bufferMatches struct {
-	frequency int
-	similar   int
-}
+var CurrentAccount *Account
 
-const BufferIntervalMinutes = 2
-const MaxFrequencyPerInterval = 3
-const MaxSimilarityPerInterval = 1
+const (
+	IntervalMinutes          = 2
+	MaxFrequencyPerInterval  = 3
+	MaxSimilarityPerInterval = 1
+)
+
+const (
+	AccountAlreadyInitialized  = "account-already-initialized"
+	InsufficientLimit          = "insufficient-limit"
+	CardNotActive              = "card-not-active"
+	HighFrequencySmallInterval = "high-frequency-small-interval"
+	DoubledTransaction         = "doubled-transaction"
+)
 
 func Initialize(acc Account) []error {
 	if CurrentAccount != nil {
@@ -38,40 +43,41 @@ func (acc *Account) Authorize(tr Transaction) []error {
 	if !acc.ActiveCard {
 		errs = append(errs, errors.New(CardNotActive))
 	}
-	matches := acc.countBufferMatches(tr)
+	matches := acc.countMatches(tr)
 	if matches.frequency == MaxFrequencyPerInterval {
 		errs = append(errs, errors.New(HighFrequencySmallInterval))
 	}
-	if matches.similar == MaxSimilarityPerInterval {
+	if matches.similarity == MaxSimilarityPerInterval {
 		errs = append(errs, errors.New(DoubledTransaction))
 	}
 
 	if errs == nil {
-		shouldClearBuffer := matches.frequency == 0
-		acc.commit(tr, shouldClearBuffer)
+		*acc = Account{
+			ActiveCard:     acc.ActiveCard,
+			AvailableLimit: acc.AvailableLimit - tr.Amount,
+			transactions:   append(acc.transactions, tr),
+		}
 	}
+
 	return errs
 }
 
-func (acc *Account) commit(tr Transaction, clearBuffer bool) {
-	acc.AvailableLimit -= tr.Amount
-	if clearBuffer {
-		acc.transactions = []Transaction{}
-	}
-	acc.transactions = append(acc.transactions, tr)
-}
-
-func (acc *Account) countBufferMatches(newTransaction Transaction) bufferMatches {
-	matches := bufferMatches{}
+func (acc *Account) countMatches(newTransaction Transaction) matches {
+	matches := matches{}
 	for _, t := range acc.transactions {
-		timeSinceLastTransaction := newTransaction.Time.Sub(t.Time)
-		if timeSinceLastTransaction.Minutes() > BufferIntervalMinutes {
+		minutesSinceLastTransaction := newTransaction.Time.Sub(t.Time).Minutes()
+		if minutesSinceLastTransaction > IntervalMinutes {
 			continue
 		}
 		if newTransaction.isSimilar(t) {
-			matches.similar++
+			matches.similarity++
 		}
 		matches.frequency++
 	}
 	return matches
+}
+
+type matches struct {
+	frequency  int
+	similarity int
 }
