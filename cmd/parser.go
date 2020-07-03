@@ -25,7 +25,7 @@ func Parse(reader io.Reader) *bytes.Buffer {
 		return &bytes.Buffer{} // undefined operation
 	}
 
-	var output Payload = Payload{
+	var output = Payload{
 		Account:    CurrentAccount,
 		Violations: []string{},
 	}
@@ -34,7 +34,6 @@ func Parse(reader io.Reader) *bytes.Buffer {
 	}
 
 	buffer := &bytes.Buffer{}
-	encoder := json.NewEncoder(buffer)
-	_ = encoder.Encode(output)
+	_ = json.NewEncoder(buffer).Encode(&output)
 	return buffer
 }
