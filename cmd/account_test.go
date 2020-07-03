@@ -175,7 +175,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 
 func TestCountMatches(t *testing.T) {
 	tests := map[string]func(*testing.T){
-		"Should count matches according to the defined interval": func(t *testing.T) {
+		"Should count and group transaction matches according to interval rules": func(t *testing.T) {
 			// given
 			account := &Account{
 				transactions: []Transaction{
