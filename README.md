@@ -69,8 +69,8 @@ the code into dedicated **core domain** and **interface adapter** packages in th
 After the program starts, every line received on `stdin` is tentatively parsed to a known structure so we can understand
 if the input is related to an  **Account creation** or a **Transaction authorization** operation. 
 
-In case the program is unable to identify the input, 
-an empty body is printed on `stdout` as a form of feedback but the execution does not stop.
+In case the program is unable to identify the input, an empty body is printed on `stdout` as a form of feedback 
+but the execution does not stop.
 
 #### Account creation
 
@@ -79,13 +79,15 @@ violation if an account is already set.
 
 #### Transaction authorization
 
-Tries to authorize a `transaction`. Updates the `CurrentAccount` state in case of success. The validations 
-performed check either simple properties from the account state (for `insufficient-limit` and `card-not-active` violations) 
-or counts matches iterating through a last authorized `transactions` array 
-(for `high-frequency-small-interval` and `doubled-transaction` violations).
+Tries to authorize a `transaction`. Updates the `CurrentAccount` state in case of success. 
 
-In the future, this `transactions` could be improved to keep track of only the events 
-that happened during the last **2 minutes** (customizable on the `IntervalMinutes` configuration setting).
+The validations access simple properties directly from the `CurrentAccount` state 
+to check for `insufficient-limit` and `card-not-active` violations or iterates 
+through a last authorized `transactions` array to count matches in order to detect 
+`high-frequency-small-interval` and `doubled-transaction` violations.
+
+In the future, the last authorized `transactions` array could be improved to keep track of only the events 
+that happened during the last **2 minutes** (timespan customizable on the `IntervalMinutes` constant).
 
 #### Output encoding
 
