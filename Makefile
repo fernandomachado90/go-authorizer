@@ -7,9 +7,9 @@ MODULE_NAME = cmd
 .PHONY: help
 help:
 	$(info go-authorizer commands:)
-	$(info -> setup                   install dependencies)
+	$(info -> setup                   installs dependencies)
 	$(info -> format                  formats go files)
-	$(info -> build                   build binary)
+	$(info -> build                   builds binary)
 	$(info -> test                    runs available tests)
 	$(info -> run                     runs application)
 	$(info -> docker-build            builds application on a docker image)
@@ -17,7 +17,7 @@ help:
 	$(info -> docker-run              runs application on a docker image)
 
 .PHONY: setup
-install:
+setup:
 	go get -d -v -t ./...
 	go install -v ./...
 	go mod tidy -v
