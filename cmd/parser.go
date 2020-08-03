@@ -12,21 +12,28 @@ type Payload struct {
 	Violations  []string     `json:"violations"`
 }
 
-func Parse(reader io.Reader) *bytes.Buffer {
+type Parser struct {
+	accountManager *AccountManager
+	accountActive  Account
+}
+
+func (p *Parser) Parse(reader io.Reader) *bytes.Buffer {
 	var input Payload
 	_ = json.NewDecoder(reader).Decode(&input)
 
 	var errs []error
+	var acc Account
 	if input.Account != nil {
-		errs = Initialize(*input.Account)
+		acc, errs = p.accountManager.Initialize(*input.Account)
 	} else if input.Transaction != nil {
-		errs = CurrentAccount.Authorize(*input.Transaction)
+		acc, errs = p.accountManager.Authorize(p.accountActive, *input.Transaction)
 	} else {
 		return &bytes.Buffer{} // undefined operation
 	}
 
+	p.accountActive = acc
 	var output = Payload{
-		Account:    CurrentAccount,
+		Account:    &acc,
 		Violations: []string{},
 	}
 	for _, err := range errs {

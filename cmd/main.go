@@ -6,7 +6,13 @@ import (
 )
 
 func main() {
+	// given
+	db := NewMemoryDB()
+	p := Parser{
+		accountManager: NewAccountManager(db),
+	}
+
 	for {
-		fmt.Println(Parse(os.Stdin))
+		fmt.Println(p.Parse(os.Stdin))
 	}
 }

@@ -9,7 +9,10 @@ import (
 
 func TestIntegration(t *testing.T) {
 	// given
-	CurrentAccount = nil
+	db := NewMemoryDB()
+	p := Parser{
+		accountManager: NewAccountManager(db),
+	}
 
 	type contract struct {
 		input  string
@@ -50,7 +53,7 @@ func TestIntegration(t *testing.T) {
 		// when
 		var stdin bytes.Buffer
 		stdin.Write([]byte(contract.input))
-		stdout := Parse(&stdin)
+		stdout := p.Parse(&stdin)
 
 		//then
 		assert.JSONEq(t, contract.output, stdout.String())

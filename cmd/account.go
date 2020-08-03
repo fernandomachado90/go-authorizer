@@ -10,58 +10,6 @@ type Account struct {
 	transactions   []Transaction
 }
 
-var CurrentAccount *Account
-
-const (
-	IntervalMinutes          = 2
-	MaxFrequencyPerInterval  = 3
-	MaxSimilarityPerInterval = 1
-)
-
-const (
-	AccountAlreadyInitialized  = "account-already-initialized"
-	InsufficientLimit          = "insufficient-limit"
-	CardNotActive              = "card-not-active"
-	HighFrequencySmallInterval = "high-frequency-small-interval"
-	DoubledTransaction         = "doubled-transaction"
-)
-
-func Initialize(acc Account) []error {
-	if CurrentAccount != nil {
-		return []error{errors.New(AccountAlreadyInitialized)}
-	}
-	CurrentAccount = &acc
-	return nil
-}
-
-func (acc *Account) Authorize(tr Transaction) []error {
-	var errs []error
-
-	if acc.AvailableLimit-tr.Amount < 0 {
-		errs = append(errs, errors.New(InsufficientLimit))
-	}
-	if !acc.ActiveCard {
-		errs = append(errs, errors.New(CardNotActive))
-	}
-	matches := acc.countMatches(tr)
-	if matches.frequency == MaxFrequencyPerInterval {
-		errs = append(errs, errors.New(HighFrequencySmallInterval))
-	}
-	if matches.similarity == MaxSimilarityPerInterval {
-		errs = append(errs, errors.New(DoubledTransaction))
-	}
-
-	if errs == nil {
-		*acc = Account{
-			ActiveCard:     acc.ActiveCard,
-			AvailableLimit: acc.AvailableLimit - tr.Amount,
-			transactions:   append(acc.transactions, tr),
-		}
-	}
-
-	return errs
-}
-
 func (acc *Account) countMatches(newTransaction Transaction) matches {
 	matches := matches{}
 	for _, t := range acc.transactions {
@@ -80,4 +28,65 @@ func (acc *Account) countMatches(newTransaction Transaction) matches {
 type matches struct {
 	frequency  int
 	similarity int
+}
+
+type AccountManager struct {
+	db db
+}
+
+func NewAccountManager(db db) *AccountManager {
+	return &AccountManager{db}
+}
+
+const (
+	IntervalMinutes          = 2
+	MaxFrequencyPerInterval  = 3
+	MaxSimilarityPerInterval = 1
+)
+
+const (
+	AccountAlreadyInitialized  = "account-already-initialized"
+	InsufficientLimit          = "insufficient-limit"
+	CardNotActive              = "card-not-active"
+	HighFrequencySmallInterval = "high-frequency-small-interval"
+	DoubledTransaction         = "doubled-transaction"
+)
+
+func (m *AccountManager) Initialize(acc Account) (Account, []error) {
+	var errs []error
+
+	acc, err := m.db.CreateAccount(acc)
+	if err != nil {
+		errs = append(errs, errors.New(AccountAlreadyInitialized))
+	}
+
+	return acc, errs
+}
+
+func (m *AccountManager) Authorize(acc Account, tr Transaction) (Account, []error) {
+	var errs []error
+
+	if acc.AvailableLimit-tr.Amount < 0 {
+		errs = append(errs, errors.New(InsufficientLimit))
+	}
+	if !acc.ActiveCard {
+		errs = append(errs, errors.New(CardNotActive))
+	}
+	matches := acc.countMatches(tr)
+	if matches.frequency == MaxFrequencyPerInterval {
+		errs = append(errs, errors.New(HighFrequencySmallInterval))
+	}
+	if matches.similarity == MaxSimilarityPerInterval {
+		errs = append(errs, errors.New(DoubledTransaction))
+	}
+
+	if errs == nil {
+		acc, _ = m.db.UpdateAccount(Account{
+			ActiveCard:     acc.ActiveCard,
+			AvailableLimit: acc.AvailableLimit - tr.Amount,
+			transactions:   append(acc.transactions, tr),
+		})
+	}
+
+	return acc, errs
 }
