@@ -6,7 +6,6 @@ import (
 )
 
 func main() {
-	// given
 	db := NewMemoryDB()
 	p := Parser{
 		accountManager: NewAccountManager(db),
