@@ -26,7 +26,6 @@ func (m *AccountManager) Initialize(acc Account) (Account, []error) {
 func (m *AccountManager) Authorize(acc Account, tr Transaction) (Account, []error) {
 	var errs []error
 
-	// TODO: refactor to controller design pattern
 	if acc.AvailableLimit-tr.Amount < 0 {
 		errs = append(errs, errors.New(InsufficientLimit))
 	}
