@@ -7,7 +7,13 @@ import (
 )
 
 type Handler struct {
-	accountManager *AccountManager
+	db             DB
+	accountHandler AccountHandler
+}
+
+type AccountHandler interface {
+	Initialize(Account) (Account, []error)
+	Authorize(Account, Transaction) (Account, []error)
 }
 
 func (h *Handler) Decode(reader io.Reader) interface{} {
@@ -28,15 +34,16 @@ func (h *Handler) Decode(reader io.Reader) interface{} {
 	return nil
 }
 
-func (h *Handler) Process(request interface{}) (Account, []error) {
-	switch r := request.(type) {
+func (h *Handler) Dispatch(request interface{}) (Account, []error) {
+	switch req := request.(type) {
 	case Account:
-		return h.accountManager.Initialize(r)
+		return h.accountHandler.Initialize(req)
 	case Transaction:
-		acc, _ := h.accountManager.db.CurrentAccount()
-		return h.accountManager.Authorize(acc, r)
+		acc, _ := h.db.CurrentAccount()
+		return h.accountHandler.Authorize(acc, req)
 	default:
-		return Account{}, nil
+		acc, _ := h.db.CurrentAccount()
+		return acc, nil
 	}
 }
 

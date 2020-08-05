@@ -52,7 +52,7 @@ func TestIntegration(t *testing.T) {
 		var stdin bytes.Buffer
 		stdin.Write([]byte(contract.input))
 
-		stdout := h.Encode(h.Process(h.Decode(&stdin)))
+		stdout := h.Encode(h.Dispatch(h.Decode(&stdin)))
 
 		//then
 		assert.JSONEq(t, contract.output, stdout.String())

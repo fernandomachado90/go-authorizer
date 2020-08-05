@@ -5,26 +5,12 @@ import (
 )
 
 type AccountManager struct {
-	db db
+	db DB
 }
 
-func NewAccountManager(db db) *AccountManager {
+func NewAccountManager(db DB) *AccountManager {
 	return &AccountManager{db}
 }
-
-const (
-	IntervalMinutes          = 2
-	MaxFrequencyPerInterval  = 3
-	MaxSimilarityPerInterval = 1
-)
-
-const (
-	AccountAlreadyInitialized  = "account-already-initialized"
-	InsufficientLimit          = "insufficient-limit"
-	CardNotActive              = "card-not-active"
-	HighFrequencySmallInterval = "high-frequency-small-interval"
-	DoubledTransaction         = "doubled-transaction"
-)
 
 func (m *AccountManager) Initialize(acc Account) (Account, []error) {
 	var errs []error
@@ -40,6 +26,7 @@ func (m *AccountManager) Initialize(acc Account) (Account, []error) {
 func (m *AccountManager) Authorize(acc Account, tr Transaction) (Account, []error) {
 	var errs []error
 
+	// TODO: refactor to controller design pattern
 	if acc.AvailableLimit-tr.Amount < 0 {
 		errs = append(errs, errors.New(InsufficientLimit))
 	}
@@ -64,3 +51,17 @@ func (m *AccountManager) Authorize(acc Account, tr Transaction) (Account, []erro
 
 	return acc, errs
 }
+
+const (
+	IntervalMinutes          = 2
+	MaxFrequencyPerInterval  = 3
+	MaxSimilarityPerInterval = 1
+)
+
+const (
+	AccountAlreadyInitialized  = "account-already-initialized"
+	InsufficientLimit          = "insufficient-limit"
+	CardNotActive              = "card-not-active"
+	HighFrequencySmallInterval = "high-frequency-small-interval"
+	DoubledTransaction         = "doubled-transaction"
+)

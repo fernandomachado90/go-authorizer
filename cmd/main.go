@@ -8,13 +8,14 @@ import (
 func initHandler() Handler {
 	db := NewMemoryDB()
 	return Handler{
-		accountManager: NewAccountManager(db),
+		db:             db,
+		accountHandler: NewAccountManager(db),
 	}
 }
 
 func main() {
 	h := initHandler()
 	for {
-		fmt.Println(h.Encode(h.Process(h.Decode(os.Stdin))))
+		fmt.Println(h.Encode(h.Dispatch(h.Decode(os.Stdin))))
 	}
 }

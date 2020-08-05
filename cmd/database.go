@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-type db interface {
+type DB interface {
 	CreateAccount(Account) (Account, error)
 	UpdateAccount(Account) Account
 	CurrentAccount() (Account, error)

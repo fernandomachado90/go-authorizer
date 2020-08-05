@@ -1,146 +1,57 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestParse(t *testing.T) {
+func TestDecode(t *testing.T) {
 	tests := map[string]func(*testing.T){
-		"Should initialize account with no violations": func(t *testing.T) {
-			// // given
-			// CurrentAccount = nil
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(`{ "account": { "activeCard": true, "availableLimit": 100 } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// assert.JSONEq(t, `{"account":{"activeCard":true,"availableLimit":100},"violations":[]}`, stdout.String())
+		"Should decode account": func(t *testing.T) {
+			// given
+			h := Handler{}
+			var stdin bytes.Buffer
+			stdin.Write([]byte(`{ "account": { "activeCard": true, "availableLimit": 100 } }`))
+
+			// when
+			res := h.Decode(&stdin)
+
+			// then
+			acc := res.(Account)
+			assert.Equal(t, true, acc.ActiveCard)
+			assert.Equal(t, 100, acc.AvailableLimit)
 		},
-		"Should not initialize account due to account already initialized violation": func(t *testing.T) {
-			// // given
-			// CurrentAccount = &Account{
-			// 	ActiveCard:     true,
-			// 	AvailableLimit: 500,
-			// }
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(`{ "account": { "activeCard": false, "availableLimit": 100 } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// expected := fmt.Sprintf(`{"account":{"activeCard":true,"availableLimit":500},"violations":["%s"]}`, AccountAlreadyInitialized)
-			// assert.JSONEq(t, expected, stdout.String())
+		"Should decode transaction": func(t *testing.T) {
+			// given
+			h := Handler{}
+			var stdin bytes.Buffer
+			stdin.Write([]byte(`{ "transaction": { "merchant": "Acme Corporation", "amount": 20, "time": "2020-07-12T10:00:00.000Z" } }`))
+
+			// when
+			res := h.Decode(&stdin)
+
+			// then
+			tr := res.(Transaction)
+			assert.Equal(t, "Acme Corporation", tr.Merchant)
+			assert.Equal(t, 20, tr.Amount)
+			assert.NotEmpty(t, tr.Time)
 		},
-		"Should authorize transaction with no violations": func(t *testing.T) {
-			// // given
-			// CurrentAccount = &Account{
-			// 	ActiveCard:     true,
-			// 	AvailableLimit: 100,
-			// }
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(` { "transaction": { "merchant": "Acme Corporation", "amount": 20, "time": "2020-07-12T10:00:00.000Z" } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// assert.JSONEq(t, `{"account":{"activeCard":true,"availableLimit":80},"violations":[]}`, stdout.String())
-		},
-		"Should not authorize transaction due to insufficient limit violation": func(t *testing.T) {
-			// // given
-			// CurrentAccount = &Account{
-			// 	ActiveCard:     true,
-			// 	AvailableLimit: 100,
-			// }
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(` { "transaction": { "merchant": "Acme Corporation", "amount": 999, "time": "2020-07-12T10:00:00.000Z" } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// expected := fmt.Sprintf(`{"account":{"activeCard":true,"availableLimit":100},"violations":["%s"]}`, InsufficientLimit)
-			// assert.JSONEq(t, expected, stdout.String())
-		},
-		"Should not authorize transaction due to card not active violation": func(t *testing.T) {
-			// // given
-			// CurrentAccount = &Account{
-			// 	ActiveCard:     false,
-			// 	AvailableLimit: 100,
-			// }
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(` { "transaction": { "merchant": "Acme Corporation", "amount": 20, "time": "2020-07-12T10:00:00.000Z" } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// expected := fmt.Sprintf(`{"account":{"activeCard":false,"availableLimit":100},"violations":["%s"]}`, CardNotActive)
-			// assert.JSONEq(t, expected, stdout.String())
-		},
-		"Should not authorize transaction due to high frequency on a small interval violation": func(t *testing.T) {
-			// // given
-			// CurrentAccount = &Account{
-			// 	ActiveCard:     true,
-			// 	AvailableLimit: 100,
-			// 	transactions: []Transaction{
-			// 		{Time: time.Date(2020, 7, 12, 10, 30, 0, 0, time.UTC)},
-			// 		{Time: time.Date(2020, 7, 12, 10, 31, 0, 0, time.UTC)},
-			// 		{Time: time.Date(2020, 7, 12, 10, 31, 30, 0, time.UTC)},
-			// 	},
-			// }
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(` { "transaction": { "merchant": "Acme Corporation", "amount": 50, "time": "2020-7-12T10:30:00.000Z" } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// expected := fmt.Sprintf(`{"account":{"activeCard":true,"availableLimit":100},"violations":["%s"]}`, HighFrequencySmallInterval)
-			// assert.JSONEq(t, expected, stdout.String())
-		},
-		"Should not authorize transaction due to doubled transaction violation": func(t *testing.T) {
-			// // given
-			// CurrentAccount = &Account{
-			// 	ActiveCard:     true,
-			// 	AvailableLimit: 100,
-			// 	transactions: []Transaction{
-			// 		{
-			// 			Merchant: "Acme Corporation",
-			// 			Amount:   50,
-			// 		},
-			// 	},
-			// }
-			//
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(` { "transaction": { "merchant": "Acme Corporation", "amount": 50, "time": "2020-7-12T10:30:00.000Z" } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// expected := fmt.Sprintf(`{"account":{"activeCard":true,"availableLimit":100},"violations":["%s"]}`, DoubledTransaction)
-			// assert.JSONEq(t, expected, stdout.String())
-		},
-		"Should output empty payload after parsing unknown commands": func(t *testing.T) {
-			// // given
-			// var stdin bytes.Buffer
-			// stdin.Write([]byte(`{ "unknown": { "command": "here" } }`))
-			//
-			// // when
-			// stdout := Parse(&stdin)
-			//
-			// // then
-			// assert.Empty(t, stdout)
+		"Should not decode unknown payload": func(t *testing.T) {
+			// given
+			h := Handler{}
+			var stdin bytes.Buffer
+			stdin.Write([]byte(`{ "unknown": { "command": "here" } }`))
+
+			// when
+			res := h.Decode(&stdin)
+
+			// then
+			assert.Empty(t, res)
 		},
 	}
 
@@ -149,4 +60,118 @@ func TestParse(t *testing.T) {
 			run(t)
 		})
 	}
+}
+
+func TestEncode(t *testing.T) {
+	tests := map[string]func(*testing.T){
+		"Should encode response": func(t *testing.T) {
+			// given
+			h := Handler{}
+			acc := Account{
+				ActiveCard:     true,
+				AvailableLimit: 100,
+			}
+			errs := []error{
+				errors.New("this-is-an-error"),
+			}
+
+			// when
+			res := h.Encode(acc, errs)
+
+			// then
+			assert.JSONEq(t, `{"account":{"activeCard":true,"availableLimit":100},"violations":["this-is-an-error"]}`, res.String())
+		},
+	}
+
+	for name, run := range tests {
+		t.Run(name, func(t *testing.T) {
+			run(t)
+		})
+	}
+}
+
+func TestDispatch(t *testing.T) {
+	// setup
+	dbMock := NewDatabaseMock()
+	accMock := &accountHandlerMock{}
+	h := Handler{
+		db:             dbMock,
+		accountHandler: accMock,
+	}
+
+	tests := map[string]func(*testing.T){
+		"Should dispatch initialize account request": func(t *testing.T) {
+			// given
+			acc := Account{
+				ActiveCard:     true,
+				AvailableLimit: 100,
+			}
+			accMock.On("Initialize", acc).Return(acc, nil)
+
+			// when
+			res, errs := h.Dispatch(acc)
+
+			// then
+			accMock.AssertNumberOfCalls(t, "Initialize", 1)
+			assert.Equal(t, acc, res)
+			assert.Empty(t, errs)
+		},
+		"Should dispatch authorize transaction request": func(t *testing.T) {
+			// given
+			acc := Account{
+				ActiveCard:     true,
+				AvailableLimit: 100,
+			}
+			tr := Transaction{
+				Merchant: "Acme Corporation",
+				Amount:   100,
+				Time:     time.Now(),
+			}
+			dbMock.On("CurrentAccount").Return(acc, nil)
+			accMock.On("Authorize", acc, tr)
+
+			// when
+			res, errs := h.Dispatch(tr)
+
+			// then
+			accMock.AssertNumberOfCalls(t, "Authorize", 1)
+			assert.Equal(t, acc, res)
+			assert.Empty(t, errs)
+		},
+		"Should reach fallback for unknown request": func(t *testing.T) {
+			// given
+			acc := Account{
+				ActiveCard:     true,
+				AvailableLimit: 100,
+			}
+			dbMock.On("CurrentAccount").Return(acc, nil)
+
+			// when
+			res, errs := h.Dispatch(nil)
+
+			// then
+			assert.Equal(t, acc, res)
+			assert.Empty(t, errs)
+		},
+	}
+
+	for name, run := range tests {
+		t.Run(name, func(t *testing.T) {
+			run(t)
+		})
+	}
+}
+
+type accountHandlerMock struct {
+	mock.Mock
+}
+
+func (h *accountHandlerMock) Initialize(acc Account) (Account, []error) {
+	_ = h.Called(acc)
+	return acc, nil
+}
+
+func (h *accountHandlerMock) Authorize(acc Account, tr Transaction) (Account, []error) {
+	_ = h.Called(acc, tr)
+	return acc, nil
 }
