@@ -5,13 +5,16 @@ import (
 	"os"
 )
 
-func main() {
+func initHandler() Handler {
 	db := NewMemoryDB()
-	p := Parser{
+	return Handler{
 		accountManager: NewAccountManager(db),
 	}
+}
 
+func main() {
+	h := initHandler()
 	for {
-		fmt.Println(p.Parse(os.Stdin))
+		fmt.Println(h.Encode(h.Process(h.Decode(os.Stdin))))
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestInitializeAccount(t *testing.T) {
@@ -67,6 +68,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 				AvailableLimit: 100,
 			}
 			db := NewDatabaseMock()
+			db.On("UpdateAccount", mock.AnythingOfType("Account"))
 			m := NewAccountManager(db)
 
 			// when
@@ -88,6 +90,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 				AvailableLimit: 100,
 			}
 			db := NewDatabaseMock()
+			db.On("UpdateAccount", mock.AnythingOfType("Account"))
 			m := NewAccountManager(db)
 
 			// when
@@ -110,6 +113,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 				AvailableLimit: 100,
 			}
 			db := NewDatabaseMock()
+			db.On("UpdateAccount", mock.AnythingOfType("Account"))
 			m := NewAccountManager(db)
 
 			// when
@@ -137,6 +141,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 				},
 			}
 			db := NewDatabaseMock()
+			db.On("UpdateAccount", mock.AnythingOfType("Account"))
 			m := NewAccountManager(db)
 
 			// when
@@ -166,6 +171,7 @@ func TestAuthorizeTransaction(t *testing.T) {
 				},
 			}
 			db := NewDatabaseMock()
+			db.On("UpdateAccount", mock.AnythingOfType("Account"))
 			m := NewAccountManager(db)
 
 			// when

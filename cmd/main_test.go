@@ -8,11 +8,6 @@ import (
 )
 
 func TestIntegration(t *testing.T) {
-	// given
-	db := NewMemoryDB()
-	p := Parser{
-		accountManager: NewAccountManager(db),
-	}
 
 	type contract struct {
 		input  string
@@ -49,11 +44,15 @@ func TestIntegration(t *testing.T) {
 		},
 	}
 
+	// given
+	h := initHandler()
+
 	for _, contract := range tests {
 		// when
 		var stdin bytes.Buffer
 		stdin.Write([]byte(contract.input))
-		stdout := p.Parse(&stdin)
+
+		stdout := h.Encode(h.Process(h.Decode(&stdin)))
 
 		//then
 		assert.JSONEq(t, contract.output, stdout.String())

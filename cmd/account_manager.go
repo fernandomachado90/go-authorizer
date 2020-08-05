@@ -55,7 +55,7 @@ func (m *AccountManager) Authorize(acc Account, tr Transaction) (Account, []erro
 	}
 
 	if errs == nil {
-		acc, _ = m.db.UpdateAccount(Account{
+		acc = m.db.UpdateAccount(Account{
 			ActiveCard:     acc.ActiveCard,
 			AvailableLimit: acc.AvailableLimit - tr.Amount,
 			transactions:   append(acc.transactions, tr),
